@@ -49,6 +49,7 @@ const defaultState = {
 };
 
 const state = { ...defaultState };
+let isSyncingHash = false;
 
 const logoSvgs = {
   phone: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
@@ -69,8 +70,9 @@ const logoSvgs = {
   </svg>`,
   whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <rect width="100" height="100" rx="20" fill="#25d366" />
-    <path d="M50 22c-14 0-26 11-26 25 0 5 1 10 4 14l-5 17 18-5c3 1 6 2 9 2 14 0 26-11 26-25S64 22 50 22z" fill="#ffffff" />
-    <path d="M42 40c1-1 2-1 3 0l4 4c1 1 1 2 0 3l-2 2c2 4 5 7 9 9l2-2c1-1 2-1 3 0l4 4c1 1 1 2 0 3l-3 3c-2 2-5 3-8 2-8-2-15-9-17-17-1-3 0-6 2-8l3-3z" fill="#25d366" />
+    <g transform="translate(50 50) scale(4) translate(-12 -12)" fill="#ffffff">
+      <path d="M20.52 3.48A11.82 11.82 0 0 0 12.07 0C5.45.05.05 5.45 0 12.07a11.87 11.87 0 0 0 1.65 6.07L0 24l6.09-1.6a11.93 11.93 0 0 0 5.99 1.52h.05c6.62 0 12.02-5.4 12.02-12.02a11.93 11.93 0 0 0-3.63-8.52zM12.07 21.4h-.05a9.89 9.89 0 0 1-5.04-1.38l-.36-.21-3.61.95.96-3.51-.24-.37a9.9 9.9 0 0 1-1.52-5.23c.04-5.48 4.5-9.93 9.99-9.93a9.9 9.9 0 0 1 6.99 2.89 9.86 9.86 0 0 1 2.9 6.99c0 5.52-4.48 10.0-10.02 10.0zm5.45-7.49c-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.91-2.22-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49 0 1.47 1.08 2.89 1.23 3.09.15.2 2.13 3.26 5.16 4.57.72.31 1.28.5 1.72.64.72.23 1.37.2 1.88.12.57-.08 1.77-.72 2.02-1.41.25-.69.25-1.28.17-1.41-.08-.13-.27-.2-.57-.35z" />
+    </g>
   </svg>`,
   wifi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <rect width="100" height="100" rx="20" fill="#2563eb" />
@@ -150,6 +152,33 @@ function updateDesignTabs(tab) {
   document.querySelectorAll("[data-design-panel]").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.designPanel === tab);
   });
+}
+
+function setRouteHash(contentType) {
+  if (isSyncingHash) return;
+  const hashValue = `#${contentType}`;
+  if (window.location.hash === hashValue) return;
+  isSyncingHash = true;
+  window.location.hash = hashValue;
+  setTimeout(() => {
+    isSyncingHash = false;
+  }, 0);
+}
+
+function applyContentType(contentType) {
+  state.contentType = contentType;
+  const activeBtn = document.querySelector(`[data-content-type='${contentType}']`);
+  setActive(document.querySelectorAll("[data-content-type]"), activeBtn);
+  updateContentForm();
+  updateQrCode();
+}
+
+function applyContentTypeFromHash() {
+  const raw = window.location.hash.replace("#", "").trim();
+  if (!raw) return;
+  const target = document.querySelector(`[data-content-type='${raw}']`);
+  if (!target) return;
+  applyContentType(raw);
 }
 
 function openDesignModal() {
@@ -481,10 +510,8 @@ function resetApp() {
 function bindEvents() {
   document.querySelectorAll("[data-content-type]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      state.contentType = btn.dataset.contentType;
-      setActive(document.querySelectorAll("[data-content-type]"), btn);
-      updateContentForm();
-      updateQrCode();
+      applyContentType(btn.dataset.contentType);
+      setRouteHash(btn.dataset.contentType);
     });
   });
 
@@ -658,6 +685,12 @@ function init() {
   updateFramePreview();
   updateQrCode();
   bindEvents();
+
+  applyContentTypeFromHash();
+  window.addEventListener("hashchange", () => {
+    if (isSyncingHash) return;
+    applyContentTypeFromHash();
+  });
 }
 
 init();
