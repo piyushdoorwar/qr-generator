@@ -452,6 +452,13 @@ select:focus {
   stroke-width: 1.6;
 }
 
+.logo-grid .icon img {
+  width: 32px;
+  height: 32px;
+  display: block;
+  object-fit: contain;
+}
+
 .frame-preview {
   width: 56px;
   height: 56px;

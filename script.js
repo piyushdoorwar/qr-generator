@@ -55,36 +55,13 @@ const defaultState = {
 const state = { ...defaultState };
 let isSyncingHash = false;
 
-const logoSvgs = {
-  phone: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="20" fill="#3b2dd7" />
-    <rect x="32" y="18" width="36" height="64" rx="8" fill="#ffffff" />
-    <circle cx="50" cy="74" r="4" fill="#3b2dd7" />
-  </svg>`,
-  email: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="20" fill="#f59e0b" />
-    <rect x="18" y="28" width="64" height="44" rx="6" fill="#ffffff" />
-    <path d="M22 32l28 22 28-22" fill="none" stroke="#f59e0b" stroke-width="6" />
-  </svg>`,
-  link: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="20" fill="#0f9f73" />
-    <path d="M38 58l24-24" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
-    <path d="M30 42a12 12 0 010-17l7-7a12 12 0 0117 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
-    <path d="M70 58a12 12 0 010 17l-7 7a12 12 0 01-17 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
-  </svg>`,
-  whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="20" fill="#25d366" />
-    <g transform="translate(50 50) scale(4) translate(-12 -12)" fill="#ffffff">
-      <path d="M20.52 3.48A11.82 11.82 0 0 0 12.07 0C5.45.05.05 5.45 0 12.07a11.87 11.87 0 0 0 1.65 6.07L0 24l6.09-1.6a11.93 11.93 0 0 0 5.99 1.52h.05c6.62 0 12.02-5.4 12.02-12.02a11.93 11.93 0 0 0-3.63-8.52zM12.07 21.4h-.05a9.89 9.89 0 0 1-5.04-1.38l-.36-.21-3.61.95.96-3.51-.24-.37a9.9 9.9 0 0 1-1.52-5.23c.04-5.48 4.5-9.93 9.99-9.93a9.9 9.9 0 0 1 6.99 2.89 9.86 9.86 0 0 1 2.9 6.99c0 5.52-4.48 10.0-10.02 10.0zm5.45-7.49c-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.91-2.22-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49 0 1.47 1.08 2.89 1.23 3.09.15.2 2.13 3.26 5.16 4.57.72.31 1.28.5 1.72.64.72.23 1.37.2 1.88.12.57-.08 1.77-.72 2.02-1.41.25-.69.25-1.28.17-1.41-.08-.13-.27-.2-.57-.35z" />
-    </g>
-  </svg>`,
-  wifi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="20" fill="#2563eb" />
-    <path d="M24 50c14-14 38-14 52 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
-    <path d="M34 60c9-9 23-9 32 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
-    <path d="M44 70c3-3 9-3 12 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
-    <circle cx="50" cy="78" r="5" fill="#ffffff" />
-  </svg>`
+const logoLibrary = {
+  phone: "assets/phone.svg",
+  email: "assets/email.svg",
+  link: "assets/link.svg",
+  whatsapp: "assets/whatsapp.svg",
+  wifi: "assets/wifi.svg",
+  upi: "assets/upi.svg"
 };
 
 const framePresets = {
@@ -104,14 +81,6 @@ const shapeMap = {
 };
 
 let qrCode;
-
-function svgToDataUri(svg) {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-const logoLibrary = Object.fromEntries(
-  Object.entries(logoSvgs).map(([key, svg]) => [key, svgToDataUri(svg)])
-);
 
 function showToast(message, type = "success") {
   if (!elements.toastContainer) return;
