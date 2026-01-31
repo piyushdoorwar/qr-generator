@@ -696,7 +696,7 @@ textarea:focus {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -704,6 +704,7 @@ textarea:focus {
   visibility: hidden;
   transition: all 0.3s ease;
   z-index: 2000;
+  backdrop-filter: blur(6px);
 }
 
 .modal-overlay.is-open {
@@ -714,26 +715,40 @@ textarea:focus {
 .modal-content {
   width: min(900px, 92vw);
   max-height: 90vh;
-  background: rgba(30, 30, 30, 0.95);
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(22, 22, 22, 0.98) 55%, rgba(36, 36, 36, 0.95) 100%);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 24px;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+}
+
+.modal-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-purple-light), var(--accent-yellow));
+  opacity: 0.85;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
+  padding: 22px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(103, 57, 183, 0.16), rgba(0, 0, 0, 0.2));
 }
 
 .modal-title {
   font-size: 18px;
   font-weight: 700;
+  color: var(--accent-yellow);
 }
 
 .modal-subtitle {
@@ -743,8 +758,33 @@ textarea:focus {
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 28px;
   overflow-y: auto;
+}
+
+.modal-header .icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
+  color: #fff;
+  border: none;
+}
+
+.modal-header .icon-btn:hover {
+  transform: translateY(-1px);
+}
+
+#designModal .modal-body {
+  display: grid;
+  gap: 20px;
+}
+
+#tipsModal .tips-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
 }
 
 #toast-container {
