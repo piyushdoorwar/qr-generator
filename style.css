@@ -6,6 +6,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --accent-purple: #6739b7;
   --accent-purple-light: #8b5cf6;
@@ -218,6 +222,14 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.content-forms [data-content-form] {
+  display: none;
+}
+
+.content-forms [data-content-form].is-active {
+  display: grid;
 }
 
 .form-grid {

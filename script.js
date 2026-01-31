@@ -17,9 +17,6 @@ const elements = {
   dotColorText: document.getElementById("dotColorText"),
   bgColor: document.getElementById("bgColor"),
   bgColorText: document.getElementById("bgColorText"),
-  logoUpload: document.getElementById("logoUpload"),
-  logoFileName: document.getElementById("logoFileName"),
-  removeLogoBtn: document.getElementById("removeLogoBtn"),
   textMessage: document.getElementById("textMessage"),
   websiteUrl: document.getElementById("websiteUrl"),
   emailAddress: document.getElementById("emailAddress"),
@@ -122,7 +119,10 @@ function setActive(elementsList, activeEl) {
 
 function updateContentForm() {
   document.querySelectorAll("[data-content-form]").forEach((form) => {
-    form.hidden = form.dataset.contentForm !== state.contentType;
+    const isActive = form.dataset.contentForm === state.contentType;
+    form.hidden = !isActive;
+    form.classList.toggle("is-active", isActive);
+    form.setAttribute("aria-hidden", isActive ? "false" : "true");
   });
 }
 
@@ -384,9 +384,6 @@ function resetApp() {
   elements.dotColorText.value = defaultState.dotColor;
   elements.bgColor.value = defaultState.bgColor;
   elements.bgColorText.value = defaultState.bgColor;
-  elements.logoUpload.value = "";
-  elements.logoFileName.textContent = "No file selected";
-
   setActive(document.querySelectorAll("[data-content-type]"), document.querySelector("[data-content-type='text']"));
   updateContentForm();
   setActive(document.querySelectorAll("[data-frame]"), document.querySelector("[data-frame='none']"));
@@ -435,8 +432,6 @@ function bindEvents() {
       const key = btn.dataset.logo;
       state.logo = key === "none" ? null : logoLibrary[key];
       setActive(document.querySelectorAll("[data-logo]"), btn);
-      elements.logoUpload.value = "";
-      elements.logoFileName.textContent = "No file selected";
       updateQrCode();
     });
   });
@@ -483,27 +478,6 @@ function bindEvents() {
 
   bindColorPair(elements.bgColor, elements.bgColorText, (value) => {
     state.bgColor = value;
-    updateQrCode();
-  });
-
-  elements.logoUpload.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      state.logo = reader.result;
-      elements.logoFileName.textContent = file.name;
-      setActive(document.querySelectorAll("[data-logo]"), null);
-      updateQrCode();
-    };
-    reader.readAsDataURL(file);
-  });
-
-  elements.removeLogoBtn.addEventListener("click", () => {
-    state.logo = null;
-    elements.logoUpload.value = "";
-    elements.logoFileName.textContent = "No file selected";
-    setActive(document.querySelectorAll("[data-logo]"), document.querySelector("[data-logo='none']"));
     updateQrCode();
   });
 
