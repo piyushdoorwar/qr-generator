@@ -33,7 +33,11 @@ const elements = {
   wifiSsid: document.getElementById("wifiSsid"),
   wifiPassword: document.getElementById("wifiPassword"),
   wifiSecurity: document.getElementById("wifiSecurity"),
-  wifiHidden: document.getElementById("wifiHidden")
+  wifiHidden: document.getElementById("wifiHidden"),
+  upiId: document.getElementById("upiId"),
+  upiName: document.getElementById("upiName"),
+  upiAmount: document.getElementById("upiAmount"),
+  upiNote: document.getElementById("upiNote")
 };
 
 const defaultState = {
@@ -263,6 +267,13 @@ function normalizePhone(code, number) {
   return digits;
 }
 
+function normalizeAmount(value) {
+  if (!value) return "";
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return "";
+  return parsed.toFixed(2);
+}
+
 function escapeWifiValue(value) {
   return value.replace(/([\\;,:"])/g, "\\$1");
 }
@@ -324,6 +335,20 @@ function buildQrData() {
 
       return `WIFI:${parts.join(";")};;`;
     }
+    case "upi": {
+      const upiId = elements.upiId.value.trim();
+      if (!upiId) return "";
+      const name = elements.upiName.value.trim();
+      const amount = normalizeAmount(elements.upiAmount.value);
+      const note = elements.upiNote.value.trim();
+      const params = new URLSearchParams();
+      params.set("pa", upiId);
+      params.set("cu", "INR");
+      if (name) params.set("pn", name);
+      if (amount) params.set("am", amount);
+      if (note) params.set("tn", note);
+      return `upi://pay?${params.toString()}`;
+    }
     default:
       return "";
   }
@@ -356,7 +381,8 @@ function updateMeta(data) {
     email: "Email",
     phone: "Mobile",
     whatsapp: "WhatsApp",
-    wifi: "WiFi"
+    wifi: "WiFi",
+    upi: "UPI"
   };
   const label = labels[state.contentType] || "QR";
   elements.meta.textContent = `${qrSize} x ${qrSize} - SVG - ${label}`;
@@ -437,24 +463,85 @@ function applyFrameToSvg(rawSvg) {
   return `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${totalWidth}\" height=\"${totalHeight}\" viewBox=\"0 0 ${totalWidth} ${totalHeight}\">\n  <rect x=\"0\" y=\"0\" width=\"${totalWidth}\" height=\"${totalHeight}\" rx=\"${preset.radius}\" fill=\"${state.frameColor}\"${stroke}${dash} />\n  <g transform=\"translate(${pad}, ${pad})\">${qrInner}</g>${labelMarkup}\n</svg>`;
 }
 
-async function copySvg() {
+async function copySvg(silent = false) {
   const svgString = await buildExportSvg();
   if (!svgString) {
-    showToast("Add content before copying", "error");
-    return;
+    if (!silent) {
+      showToast("Add content before copying", "error");
+    }
+    return false;
   }
 
   try {
     if (navigator.clipboard && window.ClipboardItem) {
       const blob = new Blob([svgString], { type: "image/svg+xml" });
       await navigator.clipboard.write([new ClipboardItem({ "image/svg+xml": blob })]);
-      showToast("SVG copied to clipboard", "success");
-      return;
+      if (!silent) {
+        showToast("SVG copied to clipboard", "success");
+      }
+      return true;
     }
     await navigator.clipboard.writeText(svgString);
-    showToast("SVG code copied", "success");
+    if (!silent) {
+      showToast("SVG code copied", "success");
+    }
+    return true;
   } catch {
-    showToast("Clipboard copy failed", "error");
+    if (!silent) {
+      showToast("Clipboard copy failed", "error");
+    }
+    return false;
+  }
+}
+
+async function shareQr() {
+  const svgString = await buildExportSvg();
+  if (!svgString) {
+    showToast("Add content before sharing", "error");
+    return;
+  }
+
+  const file = new File([svgString], "qr-code.svg", { type: "image/svg+xml" });
+
+  if (navigator.share) {
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "QR Code",
+          text: "QR code from QR Generator"
+        });
+        showToast("Share dialog opened", "success");
+        return;
+      }
+
+      await navigator.share({
+        title: "QR Code",
+        text: "QR code from QR Generator",
+        url: window.location.href
+      });
+      showToast("Share dialog opened", "success");
+      return;
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        return;
+      }
+      const copied = await copySvg(true);
+      if (copied) {
+        showToast("Share failed, copied instead", "success");
+      } else {
+        showToast("Share failed and copy failed", "error");
+      }
+      return;
+    }
+  } else {
+    const copied = await copySvg(true);
+    if (copied) {
+      showToast("Share not supported, copied instead", "success");
+    } else {
+      showToast("Share not supported and copy failed", "error");
+    }
+    return;
   }
 }
 
@@ -490,6 +577,10 @@ function resetApp() {
   elements.wifiSecurity.value = "WPA";
   elements.wifiHidden.checked = false;
   updateWifiPasswordState();
+  elements.upiId.value = "";
+  elements.upiName.value = "";
+  elements.upiAmount.value = "";
+  elements.upiNote.value = "";
   elements.frameText.value = defaultState.frameText;
   elements.frameColor.value = defaultState.frameColor;
   elements.frameColorText.value = defaultState.frameColor;
@@ -565,6 +656,10 @@ function bindEvents() {
     elements.waNumber,
     elements.wifiSsid,
     elements.wifiPassword,
+    elements.upiId,
+    elements.upiName,
+    elements.upiAmount,
+    elements.upiNote,
     elements.frameText
   ];
 
@@ -607,7 +702,7 @@ function bindEvents() {
     });
   }
 
-  elements.copyBtn.addEventListener("click", copySvg);
+  elements.copyBtn.addEventListener("click", shareQr);
   elements.downloadBtn.addEventListener("click", downloadSvg);
 
   if (elements.settingsBtn) {
