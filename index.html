@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Studio</title>
+  <title>QR Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,16 +13,8 @@
   <div class="page">
     <div id="toast-container"></div>
     <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">QR</div>
-        <div>
-          <p class="brand-overline">Studio</p>
-          <h1>QR Generator</h1>
-          <p class="brand-subtitle">Create elegant SVG QR codes for mobile, email, web, and more.</p>
-        </div>
-      </div>
-      <div class="top-actions">
-        <button class="ghost-btn" id="resetBtn" type="button">Reset</button>
+      <div class="header-left">
+        <h1 class="app-title">QR Generator</h1>
       </div>
     </header>
 
@@ -55,23 +47,11 @@
                 <span class="label">Website link</span>
                 <input id="websiteUrl" type="url" placeholder="https://example.com">
               </label>
-              <label class="field">
-                <span class="label">UTM tag (optional)</span>
-                <input id="websiteUtm" type="text" placeholder="utm_source=newsletter">
-              </label>
             </div>
             <div class="form-grid" data-content-form="email" hidden>
               <label class="field">
                 <span class="label">Email address</span>
                 <input id="emailAddress" type="email" placeholder="hello@example.com">
-              </label>
-              <label class="field">
-                <span class="label">Subject</span>
-                <input id="emailSubject" type="text" placeholder="Quick question">
-              </label>
-              <label class="field">
-                <span class="label">Message</span>
-                <textarea id="emailBody" placeholder="Write the email message..."></textarea>
               </label>
             </div>
             <div class="form-grid" data-content-form="phone" hidden>
@@ -92,10 +72,6 @@
               <label class="field">
                 <span class="label">WhatsApp number</span>
                 <input id="waNumber" type="tel" placeholder="98765 43210">
-              </label>
-              <label class="field">
-                <span class="label">Message (optional)</span>
-                <textarea id="waMessage" placeholder="Hi! I saw your QR code."></textarea>
               </label>
             </div>
           </div>

@@ -10,7 +10,6 @@ const elements = {
   meta: document.getElementById("qr-meta"),
   copyBtn: document.getElementById("copyBtn"),
   downloadBtn: document.getElementById("downloadBtn"),
-  resetBtn: document.getElementById("resetBtn"),
   frameText: document.getElementById("frameText"),
   frameColor: document.getElementById("frameColor"),
   frameColorText: document.getElementById("frameColorText"),
@@ -23,15 +22,11 @@ const elements = {
   removeLogoBtn: document.getElementById("removeLogoBtn"),
   textMessage: document.getElementById("textMessage"),
   websiteUrl: document.getElementById("websiteUrl"),
-  websiteUtm: document.getElementById("websiteUtm"),
   emailAddress: document.getElementById("emailAddress"),
-  emailSubject: document.getElementById("emailSubject"),
-  emailBody: document.getElementById("emailBody"),
   phoneCode: document.getElementById("phoneCode"),
   phoneNumber: document.getElementById("phoneNumber"),
   waCode: document.getElementById("waCode"),
-  waNumber: document.getElementById("waNumber"),
-  waMessage: document.getElementById("waMessage")
+  waNumber: document.getElementById("waNumber")
 };
 
 const defaultState = {
@@ -188,23 +183,6 @@ function normalizeUrl(value) {
   }
 }
 
-function appendUtm(url, utm) {
-  if (!utm) return url;
-  const cleaned = utm.replace(/^[?&]/, "").trim();
-  if (!cleaned) return url;
-  try {
-    const urlObj = new URL(url);
-    cleaned.split("&").forEach((pair) => {
-      if (!pair) return;
-      const [key, value = ""] = pair.split("=");
-      if (key) urlObj.searchParams.set(key, value);
-    });
-    return urlObj.toString();
-  } catch {
-    return url;
-  }
-}
-
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -222,18 +200,12 @@ function buildQrData() {
     case "website": {
       const url = normalizeUrl(elements.websiteUrl.value);
       if (!url) return "";
-      return appendUtm(url, elements.websiteUtm.value.trim());
+      return url;
     }
     case "email": {
       const address = elements.emailAddress.value.trim();
       if (!isValidEmail(address)) return "";
-      const subject = elements.emailSubject.value.trim();
-      const body = elements.emailBody.value.trim();
-      const params = new URLSearchParams();
-      if (subject) params.set("subject", subject);
-      if (body) params.set("body", body);
-      const query = params.toString();
-      return query ? `mailto:${address}?${query}` : `mailto:${address}`;
+      return `mailto:${address}`;
     }
     case "phone": {
       const digits = normalizePhone(elements.phoneCode.value, elements.phoneNumber.value);
@@ -243,9 +215,7 @@ function buildQrData() {
     case "whatsapp": {
       const digits = normalizePhone(elements.waCode.value, elements.waNumber.value);
       if (!digits) return "";
-      const message = elements.waMessage.value.trim();
-      const base = `https://wa.me/${digits}`;
-      return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+      return `https://wa.me/${digits}`;
     }
     default:
       return "";
@@ -402,15 +372,11 @@ function resetApp() {
   Object.assign(state, defaultState);
   elements.textMessage.value = "";
   elements.websiteUrl.value = "";
-  elements.websiteUtm.value = "";
   elements.emailAddress.value = "";
-  elements.emailSubject.value = "";
-  elements.emailBody.value = "";
   elements.phoneCode.value = "+1";
   elements.phoneNumber.value = "";
   elements.waCode.value = "+91";
   elements.waNumber.value = "";
-  elements.waMessage.value = "";
   elements.frameText.value = defaultState.frameText;
   elements.frameColor.value = defaultState.frameColor;
   elements.frameColorText.value = defaultState.frameColor;
@@ -486,15 +452,11 @@ function bindEvents() {
   const textInputs = [
     elements.textMessage,
     elements.websiteUrl,
-    elements.websiteUtm,
     elements.emailAddress,
-    elements.emailSubject,
-    elements.emailBody,
     elements.phoneCode,
     elements.phoneNumber,
     elements.waCode,
     elements.waNumber,
-    elements.waMessage,
     elements.frameText
   ];
 
@@ -547,10 +509,6 @@ function bindEvents() {
 
   elements.copyBtn.addEventListener("click", copySvg);
   elements.downloadBtn.addEventListener("click", downloadSvg);
-  elements.resetBtn.addEventListener("click", () => {
-    resetApp();
-    showToast("All settings reset", "success");
-  });
 }
 
 function init() {
