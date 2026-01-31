@@ -13,6 +13,9 @@ const elements = {
   settingsBtn: document.getElementById("settingsBtn"),
   designModal: document.getElementById("designModal"),
   designModalClose: document.getElementById("designModalClose"),
+  infoBtn: document.getElementById("infoBtn"),
+  tipsModal: document.getElementById("tipsModal"),
+  tipsModalClose: document.getElementById("tipsModalClose"),
   frameText: document.getElementById("frameText"),
   frameColor: document.getElementById("frameColor"),
   frameColorText: document.getElementById("frameColorText"),
@@ -148,6 +151,18 @@ function closeDesignModal() {
   if (!elements.designModal) return;
   elements.designModal.classList.remove("is-open");
   elements.designModal.setAttribute("aria-hidden", "true");
+}
+
+function openTipsModal() {
+  if (!elements.tipsModal) return;
+  elements.tipsModal.classList.add("is-open");
+  elements.tipsModal.setAttribute("aria-hidden", "false");
+}
+
+function closeTipsModal() {
+  if (!elements.tipsModal) return;
+  elements.tipsModal.classList.remove("is-open");
+  elements.tipsModal.setAttribute("aria-hidden", "true");
 }
 
 function normalizeHex(value) {
@@ -515,9 +530,26 @@ function bindEvents() {
     });
   }
 
+  if (elements.infoBtn) {
+    elements.infoBtn.addEventListener("click", openTipsModal);
+  }
+
+  if (elements.tipsModalClose) {
+    elements.tipsModalClose.addEventListener("click", closeTipsModal);
+  }
+
+  if (elements.tipsModal) {
+    elements.tipsModal.addEventListener("click", (event) => {
+      if (event.target === elements.tipsModal) {
+        closeTipsModal();
+      }
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeDesignModal();
+      closeTipsModal();
     }
   });
 }

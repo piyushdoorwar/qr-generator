@@ -17,6 +17,13 @@
         <h1 class="app-title">QR Generator</h1>
       </div>
       <div class="header-right">
+        <button class="icon-btn" id="infoBtn" type="button" aria-label="Open quick tips">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"></circle>
+            <line x1="12" y1="10" x2="12" y2="16"></line>
+            <circle cx="12" cy="7.5" r="1"></circle>
+          </svg>
+        </button>
         <button class="icon-btn" id="settingsBtn" type="button" aria-label="Open design settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"></circle>
@@ -114,14 +121,6 @@
           </div>
         </div>
 
-        <div class="step-card tips-card">
-          <h3>Quick tips</h3>
-          <ul>
-            <li>Use Level Q or H when adding a logo.</li>
-            <li>Keep background light for maximum contrast.</li>
-            <li>Test your QR with multiple camera apps.</li>
-          </ul>
-        </div>
       </aside>
     </main>
   </div>
@@ -375,6 +374,32 @@
               </label>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="tipsModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Quick tips</h3>
+          <p class="modal-subtitle">Best practices for high-scan QR codes.</p>
+        </div>
+        <button class="icon-btn" id="tipsModalClose" type="button" aria-label="Close quick tips">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="tips-card">
+          <ul>
+            <li>Use Level Q or H when adding a logo.</li>
+            <li>Keep background light for maximum contrast.</li>
+            <li>Test your QR with multiple camera apps.</li>
+          </ul>
         </div>
       </div>
     </div>
