@@ -471,9 +471,14 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.preview-card {
+.panel-right {
   position: sticky;
   top: 32px;
+  align-self: start;
+}
+
+.preview-card {
+  position: static;
 }
 
 .preview-stage {
@@ -552,6 +557,10 @@ textarea:focus {
   place-items: center;
   text-align: center;
   padding: 20px;
+}
+
+.qr-empty[hidden] {
+  display: none !important;
 }
 
 .qr-empty h3 {
@@ -684,7 +693,7 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .preview-card {
+  .panel-right {
     position: static;
   }
 }

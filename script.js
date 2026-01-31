@@ -31,7 +31,7 @@ const elements = {
 
 const defaultState = {
   contentType: "text",
-  frame: "none",
+  frame: "soft",
   shape: "rounded",
   level: "Q",
   dotColor: "#1f1530",
