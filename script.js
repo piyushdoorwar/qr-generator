@@ -29,7 +29,11 @@ const elements = {
   phoneCode: document.getElementById("phoneCode"),
   phoneNumber: document.getElementById("phoneNumber"),
   waCode: document.getElementById("waCode"),
-  waNumber: document.getElementById("waNumber")
+  waNumber: document.getElementById("waNumber"),
+  wifiSsid: document.getElementById("wifiSsid"),
+  wifiPassword: document.getElementById("wifiPassword"),
+  wifiSecurity: document.getElementById("wifiSecurity"),
+  wifiHidden: document.getElementById("wifiHidden")
 };
 
 const defaultState = {
@@ -67,6 +71,13 @@ const logoSvgs = {
     <rect width="100" height="100" rx="20" fill="#25d366" />
     <path d="M50 22c-14 0-26 11-26 25 0 5 1 10 4 14l-5 17 18-5c3 1 6 2 9 2 14 0 26-11 26-25S64 22 50 22z" fill="#ffffff" />
     <path d="M42 40c1-1 2-1 3 0l4 4c1 1 1 2 0 3l-2 2c2 4 5 7 9 9l2-2c1-1 2-1 3 0l4 4c1 1 1 2 0 3l-3 3c-2 2-5 3-8 2-8-2-15-9-17-17-1-3 0-6 2-8l3-3z" fill="#25d366" />
+  </svg>`,
+  wifi: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="20" fill="#2563eb" />
+    <path d="M24 50c14-14 38-14 52 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
+    <path d="M34 60c9-9 23-9 32 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
+    <path d="M44 70c3-3 9-3 12 0" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
+    <circle cx="50" cy="78" r="5" fill="#ffffff" />
   </svg>`
 };
 
@@ -223,6 +234,19 @@ function normalizePhone(code, number) {
   return digits;
 }
 
+function escapeWifiValue(value) {
+  return value.replace(/([\\;,:"])/g, "\\$1");
+}
+
+function updateWifiPasswordState() {
+  if (!elements.wifiSecurity || !elements.wifiPassword) return;
+  const isOpen = elements.wifiSecurity.value === "nopass";
+  elements.wifiPassword.disabled = isOpen;
+  if (isOpen) {
+    elements.wifiPassword.value = "";
+  }
+}
+
 function buildQrData() {
   switch (state.contentType) {
     case "text":
@@ -246,6 +270,30 @@ function buildQrData() {
       const digits = normalizePhone(elements.waCode.value, elements.waNumber.value);
       if (!digits) return "";
       return `https://wa.me/${digits}`;
+    }
+    case "wifi": {
+      const ssid = elements.wifiSsid.value.trim();
+      const security = elements.wifiSecurity.value;
+      const password = elements.wifiPassword.value;
+      const hidden = elements.wifiHidden.checked;
+
+      if (!ssid) return "";
+      if (security !== "nopass" && !password) return "";
+
+      const parts = [
+        `T:${security}`,
+        `S:${escapeWifiValue(ssid)}`
+      ];
+
+      if (security !== "nopass") {
+        parts.push(`P:${escapeWifiValue(password)}`);
+      }
+
+      if (hidden) {
+        parts.push("H:true");
+      }
+
+      return `WIFI:${parts.join(";")};;`;
     }
     default:
       return "";
@@ -278,7 +326,8 @@ function updateMeta(data) {
     website: "Website",
     email: "Email",
     phone: "Mobile",
-    whatsapp: "WhatsApp"
+    whatsapp: "WhatsApp",
+    wifi: "WiFi"
   };
   const label = labels[state.contentType] || "QR";
   elements.meta.textContent = `${qrSize} x ${qrSize} - SVG - ${label}`;
@@ -407,6 +456,11 @@ function resetApp() {
   elements.phoneNumber.value = "";
   elements.waCode.value = "+91";
   elements.waNumber.value = "";
+  elements.wifiSsid.value = "";
+  elements.wifiPassword.value = "";
+  elements.wifiSecurity.value = "WPA";
+  elements.wifiHidden.checked = false;
+  updateWifiPasswordState();
   elements.frameText.value = defaultState.frameText;
   elements.frameColor.value = defaultState.frameColor;
   elements.frameColorText.value = defaultState.frameColor;
@@ -482,6 +536,8 @@ function bindEvents() {
     elements.phoneNumber,
     elements.waCode,
     elements.waNumber,
+    elements.wifiSsid,
+    elements.wifiPassword,
     elements.frameText
   ];
 
@@ -510,6 +566,19 @@ function bindEvents() {
     state.bgColor = value;
     updateQrCode();
   });
+
+  if (elements.wifiSecurity) {
+    elements.wifiSecurity.addEventListener("change", () => {
+      updateWifiPasswordState();
+      updateQrCode();
+    });
+  }
+
+  if (elements.wifiHidden) {
+    elements.wifiHidden.addEventListener("change", () => {
+      updateQrCode();
+    });
+  }
 
   elements.copyBtn.addEventListener("click", copySvg);
   elements.downloadBtn.addEventListener("click", downloadSvg);
@@ -583,6 +652,7 @@ function init() {
   elements.dotColorText.value = state.dotColor;
   elements.bgColor.value = state.bgColor;
   elements.bgColorText.value = state.bgColor;
+  updateWifiPasswordState();
 
   updateContentForm();
   updateFramePreview();
