@@ -341,13 +341,13 @@ function buildQrData() {
       const name = elements.upiName.value.trim();
       const amount = normalizeAmount(elements.upiAmount.value);
       const note = elements.upiNote.value.trim();
-      const params = new URLSearchParams();
-      params.set("pa", upiId);
-      params.set("cu", "INR");
-      if (name) params.set("pn", name);
-      if (amount) params.set("am", amount);
-      if (note) params.set("tn", note);
-      return `upi://pay?${params.toString()}`;
+      const params = [];
+      params.push(`pa=${encodeURIComponent(upiId)}`);
+      params.push("cu=INR");
+      if (name) params.push(`pn=${encodeURIComponent(name)}`);
+      if (amount) params.push(`am=${encodeURIComponent(amount)}`);
+      if (note) params.push(`tn=${encodeURIComponent(note)}`);
+      return `upi://pay?${params.join("&")}`;
     }
     default:
       return "";
