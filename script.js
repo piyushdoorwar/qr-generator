@@ -10,6 +10,9 @@ const elements = {
   meta: document.getElementById("qr-meta"),
   copyBtn: document.getElementById("copyBtn"),
   downloadBtn: document.getElementById("downloadBtn"),
+  settingsBtn: document.getElementById("settingsBtn"),
+  designModal: document.getElementById("designModal"),
+  designModalClose: document.getElementById("designModalClose"),
   frameText: document.getElementById("frameText"),
   frameColor: document.getElementById("frameColor"),
   frameColorText: document.getElementById("frameColorText"),
@@ -133,6 +136,18 @@ function updateDesignTabs(tab) {
   document.querySelectorAll("[data-design-panel]").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.designPanel === tab);
   });
+}
+
+function openDesignModal() {
+  if (!elements.designModal) return;
+  elements.designModal.classList.add("is-open");
+  elements.designModal.setAttribute("aria-hidden", "false");
+}
+
+function closeDesignModal() {
+  if (!elements.designModal) return;
+  elements.designModal.classList.remove("is-open");
+  elements.designModal.setAttribute("aria-hidden", "true");
 }
 
 function normalizeHex(value) {
@@ -483,6 +498,28 @@ function bindEvents() {
 
   elements.copyBtn.addEventListener("click", copySvg);
   elements.downloadBtn.addEventListener("click", downloadSvg);
+
+  if (elements.settingsBtn) {
+    elements.settingsBtn.addEventListener("click", openDesignModal);
+  }
+
+  if (elements.designModalClose) {
+    elements.designModalClose.addEventListener("click", closeDesignModal);
+  }
+
+  if (elements.designModal) {
+    elements.designModal.addEventListener("click", (event) => {
+      if (event.target === elements.designModal) {
+        closeDesignModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeDesignModal();
+    }
+  });
 }
 
 function init() {
