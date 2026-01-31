@@ -86,11 +86,11 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.35rem 1.75rem;
-  background-color: rgba(0, 0, 0, 0.18);
+  padding: 1.35rem 0 1.1rem;
+  background-color: transparent;
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  border-radius: 18px;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .header-left {
