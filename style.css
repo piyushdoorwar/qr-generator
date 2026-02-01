@@ -362,6 +362,7 @@ textarea {
   width: 100%;
   min-width: 90px;
   padding-left: 46px;
+  padding-right: 10px;
   text-align: center;
   font-family: "JetBrains Mono", "Consolas", monospace;
   letter-spacing: 0.02em;

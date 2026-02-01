@@ -241,6 +241,7 @@ function normalizePhone(code, number) {
 const dialCodeCache = new Map();
 let dialCodeLoadPromise = null;
 const dialCodeTimers = new Map();
+const flagRenderTokens = new Map();
 const regionDisplayNames = typeof Intl !== "undefined" && Intl.DisplayNames
   ? new Intl.DisplayNames(["en"], { type: "region" })
   : null;
@@ -257,19 +258,67 @@ function setFlagImage(imgEl, flagUrl, iso2) {
   const slot = imgEl.closest(".flag-slot");
   if (!slot) return;
   if (!flagUrl) {
+    const previousUrl = imgEl.dataset.objectUrl;
+    if (previousUrl && previousUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previousUrl);
+    }
     imgEl.removeAttribute("src");
+    imgEl.dataset.objectUrl = "";
     imgEl.alt = "";
     slot.classList.remove("is-visible");
     return;
   }
-  imgEl.src = flagUrl;
   if (iso2 && regionDisplayNames) {
     const regionLabel = regionDisplayNames.of(iso2.toUpperCase());
     imgEl.alt = regionLabel ? `${regionLabel} flag` : "Country flag";
   } else {
     imgEl.alt = "Country flag";
   }
-  slot.classList.add("is-visible");
+  const nextToken = (flagRenderTokens.get(imgEl) || 0) + 1;
+  flagRenderTokens.set(imgEl, nextToken);
+
+  resolveFlagSource(flagUrl)
+    .then((src) => {
+      if (flagRenderTokens.get(imgEl) !== nextToken) {
+        if (src && src.startsWith("blob:")) {
+          URL.revokeObjectURL(src);
+        }
+        return;
+      }
+      const previousUrl = imgEl.dataset.objectUrl;
+      if (previousUrl && previousUrl.startsWith("blob:") && previousUrl !== src) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      imgEl.src = src || flagUrl;
+      imgEl.dataset.objectUrl = src && src.startsWith("blob:") ? src : "";
+      slot.classList.add("is-visible");
+    })
+    .catch(() => {
+      if (flagRenderTokens.get(imgEl) !== nextToken) return;
+      imgEl.src = flagUrl;
+      imgEl.dataset.objectUrl = "";
+      slot.classList.add("is-visible");
+    });
+}
+
+async function resolveFlagSource(flagUrl) {
+  if (!flagUrl) return "";
+  if (!("caches" in window)) return flagUrl;
+  try {
+    const cache = await caches.open("qr-flag-cache-v1");
+    const cached = await cache.match(flagUrl);
+    if (cached) {
+      const blob = await cached.blob();
+      return URL.createObjectURL(blob);
+    }
+    const response = await fetch(flagUrl, { mode: "cors" });
+    if (!response.ok) return flagUrl;
+    await cache.put(flagUrl, response.clone());
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  } catch {
+    return flagUrl;
+  }
 }
 
 function buildDialCodeCache(countries) {
