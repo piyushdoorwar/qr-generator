@@ -280,6 +280,12 @@ body::before {
   display: grid;
 }
 
+.content-forms .contact-form.is-active {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -290,6 +296,30 @@ body::before {
   grid-template-columns: minmax(130px, 160px) minmax(220px, 1fr);
 }
 
+.form-grid.form-grid--phone-extended {
+  grid-template-columns: minmax(130px, 160px) minmax(220px, 1fr) minmax(140px, 180px);
+}
+
+.contact-phone-grid {
+  align-items: end;
+}
+
+.contact-extra-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contact-extra-toggle .ghost-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.form-help {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
 .form-grid.compact {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
@@ -986,6 +1016,10 @@ select:focus {
   }
 
   .form-grid.form-grid--phone {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid.form-grid--phone-extended {
     grid-template-columns: 1fr;
   }
 }

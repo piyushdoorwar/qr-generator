@@ -38,8 +38,26 @@ const elements = {
   upiName: document.getElementById("upiName"),
   upiAmount: document.getElementById("upiAmount"),
   upiNote: document.getElementById("upiNote"),
+  contactFirstName: document.getElementById("contactFirstName"),
+  contactMiddleName: document.getElementById("contactMiddleName"),
+  contactLastName: document.getElementById("contactLastName"),
+  contactCompany: document.getElementById("contactCompany"),
+  contactEmail: document.getElementById("contactEmail"),
+  contactEmailAlt: document.getElementById("contactEmailAlt"),
+  contactBirthday: document.getElementById("contactBirthday"),
+  contactPhoneCode: document.getElementById("contactPhoneCode"),
+  contactPhoneNumber: document.getElementById("contactPhoneNumber"),
+  contactPhoneLabel: document.getElementById("contactPhoneLabel"),
+  contactAltPhoneCode1: document.getElementById("contactAltPhoneCode1"),
+  contactAltPhoneNumber1: document.getElementById("contactAltPhoneNumber1"),
+  contactAltPhoneLabel1: document.getElementById("contactAltPhoneLabel1"),
+  addContactPhoneBtn: document.getElementById("addContactPhoneBtn"),
+  removeContactPhoneBtn: document.getElementById("removeContactPhoneBtn"),
+  contactExtraPhoneBlock: document.getElementById("contactExtraPhoneBlock"),
   phoneFlag: document.getElementById("phoneFlag"),
-  waFlag: document.getElementById("waFlag")
+  waFlag: document.getElementById("waFlag"),
+  contactPhoneFlag: document.getElementById("contactPhoneFlag"),
+  contactAltPhoneFlag1: document.getElementById("contactAltPhoneFlag1")
 };
 
 const defaultState = {
@@ -60,6 +78,7 @@ let isSyncingHash = false;
 const logoLibrary = {
   phone: "assets/phone.svg",
   email: "assets/email.svg",
+  contact: "assets/contact.svg",
   link: "assets/link.svg",
   whatsapp: "assets/whatsapp.svg",
   wifi: "assets/wifi.svg",
@@ -236,6 +255,13 @@ function normalizePhone(code, number) {
   const combined = `${code || ""}${number || ""}`;
   const digits = combined.replace(/\D/g, "");
   return digits;
+}
+
+function normalizePhoneWithNumber(code, number) {
+  const numberDigits = (number || "").replace(/\D/g, "");
+  if (!numberDigits) return "";
+  const codeDigits = (code || "").replace(/\D/g, "");
+  return `${codeDigits}${numberDigits}`;
 }
 
 const dialCodeCache = new Map();
@@ -416,12 +442,65 @@ function escapeWifiValue(value) {
   return value.replace(/([\\;,:"])/g, "\\$1");
 }
 
+function escapeVCardValue(value) {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,");
+}
+
+function formatVCardType(label, fallback = "OTHER") {
+  const raw = (label || "").trim();
+  if (!raw) return fallback;
+  const upper = raw.toUpperCase();
+  const aliasMap = new Map([
+    ["MOBILE", "CELL"],
+    ["MOB", "CELL"],
+    ["CELL", "CELL"],
+    ["PHONE", "VOICE"],
+    ["VOICE", "VOICE"],
+    ["WORK", "WORK"],
+    ["HOME", "HOME"],
+    ["MAIN", "MAIN"],
+    ["OTHER", "OTHER"],
+    ["FAX", "FAX"]
+  ]);
+  if (aliasMap.has(upper)) {
+    return aliasMap.get(upper);
+  }
+  const cleaned = upper.replace(/[^A-Z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  if (!cleaned) return fallback;
+  const allowed = new Set(["HOME", "WORK", "CELL", "OTHER", "MAIN", "FAX", "VOICE"]);
+  if (allowed.has(cleaned)) return cleaned;
+  return `X-${cleaned}`;
+}
+
 function updateWifiPasswordState() {
   if (!elements.wifiSecurity || !elements.wifiPassword) return;
   const isOpen = elements.wifiSecurity.value === "nopass";
   elements.wifiPassword.disabled = isOpen;
   if (isOpen) {
     elements.wifiPassword.value = "";
+  }
+}
+
+function setContactExtraVisible(visible) {
+  if (!elements.contactExtraPhoneBlock) return;
+  elements.contactExtraPhoneBlock.hidden = !visible;
+  if (elements.addContactPhoneBtn) {
+    elements.addContactPhoneBtn.hidden = visible;
+  }
+  if (elements.removeContactPhoneBtn) {
+    elements.removeContactPhoneBtn.hidden = !visible;
+  }
+  if (!visible) {
+    if (elements.contactAltPhoneCode1) elements.contactAltPhoneCode1.value = "+1";
+    if (elements.contactAltPhoneNumber1) elements.contactAltPhoneNumber1.value = "";
+    if (elements.contactAltPhoneLabel1) elements.contactAltPhoneLabel1.value = "";
+    scheduleFlagUpdate(elements.contactAltPhoneCode1, elements.contactAltPhoneFlag1);
+  } else {
+    scheduleFlagUpdate(elements.contactAltPhoneCode1, elements.contactAltPhoneFlag1);
   }
 }
 
@@ -487,6 +566,68 @@ function buildQrData() {
       if (note) params.push(`tn=${encodeURIComponent(note)}`);
       return `upi://pay?${params.join("&")}`;
     }
+    case "contact": {
+      const first = elements.contactFirstName.value.trim();
+      const middle = elements.contactMiddleName.value.trim();
+      const last = elements.contactLastName.value.trim();
+      const company = elements.contactCompany.value.trim();
+      const email = elements.contactEmail.value.trim();
+      const altEmail = elements.contactEmailAlt.value.trim();
+      const birthday = elements.contactBirthday.value.trim();
+      const phoneDigits = normalizePhoneWithNumber(elements.contactPhoneCode.value, elements.contactPhoneNumber.value);
+      const isExtraVisible = elements.contactExtraPhoneBlock && !elements.contactExtraPhoneBlock.hidden;
+      const altPhoneDigits1 = isExtraVisible
+        ? normalizePhoneWithNumber(elements.contactAltPhoneCode1.value, elements.contactAltPhoneNumber1.value)
+        : "";
+      const validEmail = isValidEmail(email) ? email : "";
+      const validAltEmail = isValidEmail(altEmail) ? altEmail : "";
+
+      const hasData = Boolean(
+        first || middle || last || company ||
+        validEmail || validAltEmail ||
+        phoneDigits || altPhoneDigits1
+      );
+      if (!hasData) return "";
+
+      const nameParts = [first, middle, last].filter(Boolean);
+      const fullName = nameParts.join(" ").trim();
+      const fallbackName = fullName || company || validEmail || validAltEmail || (phoneDigits ? `+${phoneDigits}` : "");
+
+      const lines = ["BEGIN:VCARD", "VERSION:3.0"];
+      if (first || middle || last) {
+        lines.push(`N:${escapeVCardValue(last)};${escapeVCardValue(first)};${escapeVCardValue(middle)};;`);
+      }
+      lines.push(`FN:${escapeVCardValue(fallbackName || "Contact")}`);
+
+      if (company) {
+        lines.push(`ORG:${escapeVCardValue(company)}`);
+      }
+
+      if (phoneDigits) {
+        const primaryLabel = formatVCardType(elements.contactPhoneLabel.value, "CELL");
+        lines.push(`TEL;TYPE=${primaryLabel}:+${phoneDigits}`);
+      }
+
+      if (altPhoneDigits1) {
+        const altLabel = formatVCardType(elements.contactAltPhoneLabel1.value, "OTHER");
+        lines.push(`TEL;TYPE=${altLabel}:+${altPhoneDigits1}`);
+      }
+
+      if (validEmail) {
+        lines.push(`EMAIL;TYPE=INTERNET:${escapeVCardValue(validEmail)}`);
+      }
+
+      if (validAltEmail) {
+        lines.push(`EMAIL;TYPE=WORK:${escapeVCardValue(validAltEmail)}`);
+      }
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
+        lines.push(`BDAY:${birthday}`);
+      }
+
+      lines.push("END:VCARD");
+      return lines.join("\n");
+    }
     default:
       return "";
   }
@@ -520,7 +661,8 @@ function updateMeta(data) {
     phone: "Mobile",
     whatsapp: "WhatsApp",
     wifi: "WiFi",
-    upi: "UPI"
+    upi: "UPI",
+    contact: "Contact"
   };
   const label = labels[state.contentType] || "QR";
   elements.meta.textContent = `${qrSize} x ${qrSize} - SVG - ${label}`;
@@ -719,6 +861,20 @@ function resetApp() {
   elements.upiName.value = "";
   elements.upiAmount.value = "";
   elements.upiNote.value = "";
+  elements.contactFirstName.value = "";
+  elements.contactMiddleName.value = "";
+  elements.contactLastName.value = "";
+  elements.contactCompany.value = "";
+  elements.contactEmail.value = "";
+  elements.contactEmailAlt.value = "";
+  elements.contactBirthday.value = "";
+  elements.contactPhoneCode.value = "+1";
+  elements.contactPhoneNumber.value = "";
+  elements.contactPhoneLabel.value = "";
+  elements.contactAltPhoneCode1.value = "+1";
+  elements.contactAltPhoneNumber1.value = "";
+  elements.contactAltPhoneLabel1.value = "";
+  setContactExtraVisible(false);
   elements.frameText.value = defaultState.frameText;
   elements.frameColor.value = defaultState.frameColor;
   elements.frameColorText.value = defaultState.frameColor;
@@ -736,6 +892,8 @@ function resetApp() {
   updateQrCode();
   scheduleFlagUpdate(elements.phoneCode, elements.phoneFlag);
   scheduleFlagUpdate(elements.waCode, elements.waFlag);
+  scheduleFlagUpdate(elements.contactPhoneCode, elements.contactPhoneFlag);
+  scheduleFlagUpdate(elements.contactAltPhoneCode1, elements.contactAltPhoneFlag1);
 }
 
 function bindEvents() {
@@ -800,6 +958,19 @@ function bindEvents() {
     elements.upiName,
     elements.upiAmount,
     elements.upiNote,
+    elements.contactFirstName,
+    elements.contactMiddleName,
+    elements.contactLastName,
+    elements.contactCompany,
+    elements.contactEmail,
+    elements.contactEmailAlt,
+    elements.contactBirthday,
+    elements.contactPhoneCode,
+    elements.contactPhoneNumber,
+    elements.contactPhoneLabel,
+    elements.contactAltPhoneCode1,
+    elements.contactAltPhoneNumber1,
+    elements.contactAltPhoneLabel1,
     elements.frameText
   ];
 
@@ -815,6 +986,8 @@ function bindEvents() {
 
   bindDialCodeFlag(elements.phoneCode, elements.phoneFlag);
   bindDialCodeFlag(elements.waCode, elements.waFlag);
+  bindDialCodeFlag(elements.contactPhoneCode, elements.contactPhoneFlag);
+  bindDialCodeFlag(elements.contactAltPhoneCode1, elements.contactAltPhoneFlag1);
 
   bindColorPair(elements.frameColor, elements.frameColorText, (value) => {
     state.frameColor = value;
@@ -841,6 +1014,20 @@ function bindEvents() {
 
   if (elements.wifiHidden) {
     elements.wifiHidden.addEventListener("change", () => {
+      updateQrCode();
+    });
+  }
+
+  if (elements.addContactPhoneBtn) {
+    elements.addContactPhoneBtn.addEventListener("click", () => {
+      setContactExtraVisible(true);
+      updateQrCode();
+    });
+  }
+
+  if (elements.removeContactPhoneBtn) {
+    elements.removeContactPhoneBtn.addEventListener("click", () => {
+      setContactExtraVisible(false);
       updateQrCode();
     });
   }
@@ -918,6 +1105,7 @@ function init() {
   elements.bgColor.value = state.bgColor;
   elements.bgColorText.value = state.bgColor;
   updateWifiPasswordState();
+  setContactExtraVisible(false);
 
   updateContentForm();
   updateFramePreview();
