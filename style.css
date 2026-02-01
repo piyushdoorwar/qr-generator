@@ -322,20 +322,22 @@ textarea {
 }
 
 .country-code-input {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  position: relative;
 }
 
 .country-code-input .flag-slot {
-  width: 30px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.06);
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
   display: grid;
   place-items: center;
-  flex: 0 0 auto;
+  pointer-events: none;
 }
 
 .country-code-input .flag-icon {
@@ -347,13 +349,19 @@ textarea {
   transition: opacity 0.2s ease;
 }
 
+.country-code-input .flag-slot.is-visible {
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .country-code-input .flag-slot.is-visible .flag-icon {
   opacity: 1;
 }
 
 .country-code-input .code-input {
-  flex: 1;
+  width: 100%;
   min-width: 90px;
+  padding-left: 46px;
   text-align: center;
   font-family: "JetBrains Mono", "Consolas", monospace;
   letter-spacing: 0.02em;
