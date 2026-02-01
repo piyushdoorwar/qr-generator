@@ -71,20 +71,30 @@
                 <input id="emailAddress" type="email" placeholder="hello@example.com">
               </label>
             </div>
-            <div class="form-grid" data-content-form="phone" hidden>
+            <div class="form-grid form-grid--phone" data-content-form="phone" hidden>
               <label class="field">
                 <span class="label">Country code</span>
-                <input id="phoneCode" type="text" placeholder="+1" value="+1">
+                <div class="country-code-input">
+                  <span class="flag-slot" aria-hidden="true">
+                    <img id="phoneFlag" class="flag-icon" alt="">
+                  </span>
+                  <input id="phoneCode" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                </div>
               </label>
               <label class="field">
                 <span class="label">Mobile number</span>
                 <input id="phoneNumber" type="tel" placeholder="555 013 999">
               </label>
             </div>
-            <div class="form-grid" data-content-form="whatsapp" hidden>
+            <div class="form-grid form-grid--phone" data-content-form="whatsapp" hidden>
               <label class="field">
                 <span class="label">Country code</span>
-                <input id="waCode" type="text" placeholder="+91" value="+91">
+                <div class="country-code-input">
+                  <span class="flag-slot" aria-hidden="true">
+                    <img id="waFlag" class="flag-icon" alt="">
+                  </span>
+                  <input id="waCode" class="code-input" type="text" placeholder="+91" value="+91" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                </div>
               </label>
               <label class="field">
                 <span class="label">WhatsApp number</span>

@@ -37,7 +37,9 @@ const elements = {
   upiId: document.getElementById("upiId"),
   upiName: document.getElementById("upiName"),
   upiAmount: document.getElementById("upiAmount"),
-  upiNote: document.getElementById("upiNote")
+  upiNote: document.getElementById("upiNote"),
+  phoneFlag: document.getElementById("phoneFlag"),
+  waFlag: document.getElementById("waFlag")
 };
 
 const defaultState = {
@@ -234,6 +236,124 @@ function normalizePhone(code, number) {
   const combined = `${code || ""}${number || ""}`;
   const digits = combined.replace(/\D/g, "");
   return digits;
+}
+
+const dialCodeCache = new Map();
+let dialCodeLoadPromise = null;
+const dialCodeTimers = new Map();
+const regionDisplayNames = typeof Intl !== "undefined" && Intl.DisplayNames
+  ? new Intl.DisplayNames(["en"], { type: "region" })
+  : null;
+
+function normalizeDialCode(value) {
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "");
+  if (!digits || digits.length > 5) return "";
+  return digits;
+}
+
+function setFlagImage(imgEl, flagUrl, iso2) {
+  if (!imgEl) return;
+  const slot = imgEl.closest(".flag-slot");
+  if (!slot) return;
+  if (!flagUrl) {
+    imgEl.removeAttribute("src");
+    imgEl.alt = "";
+    slot.classList.remove("is-visible");
+    return;
+  }
+  imgEl.src = flagUrl;
+  if (iso2 && regionDisplayNames) {
+    const regionLabel = regionDisplayNames.of(iso2.toUpperCase());
+    imgEl.alt = regionLabel ? `${regionLabel} flag` : "Country flag";
+  } else {
+    imgEl.alt = "Country flag";
+  }
+  slot.classList.add("is-visible");
+}
+
+function buildDialCodeCache(countries) {
+  countries.forEach((country) => {
+    if (!country || !country.idd || !country.flags) return;
+    const root = typeof country.idd.root === "string" ? country.idd.root : "";
+    const suffixes = Array.isArray(country.idd.suffixes) ? country.idd.suffixes : [];
+    const flagUrl = country.flags.svg || country.flags.png || "";
+    const iso2 = country.cca2 || "";
+    const rootDigits = root.replace(/\D/g, "");
+    if (!rootDigits || !flagUrl) return;
+
+    if (suffixes.length === 0) {
+      if (!dialCodeCache.has(rootDigits)) {
+        dialCodeCache.set(rootDigits, { flagUrl, iso2 });
+      }
+      return;
+    }
+
+    suffixes.forEach((suffix) => {
+      const suffixDigits = typeof suffix === "string" ? suffix.replace(/\D/g, "") : "";
+      const fullCode = `${rootDigits}${suffixDigits}`;
+      if (!fullCode) return;
+      if (!dialCodeCache.has(fullCode)) {
+        dialCodeCache.set(fullCode, { flagUrl, iso2 });
+      }
+    });
+  });
+}
+
+async function ensureDialCodeCache() {
+  if (dialCodeLoadPromise) return dialCodeLoadPromise;
+  dialCodeLoadPromise = fetch("https://restcountries.com/v3.1/all?fields=idd,flags,cca2")
+    .then((response) => {
+      if (!response.ok) return [];
+      return response.json();
+    })
+    .then((data) => {
+      if (Array.isArray(data)) {
+        buildDialCodeCache(data);
+      }
+      return dialCodeCache;
+    })
+    .catch(() => dialCodeCache);
+  return dialCodeLoadPromise;
+}
+
+function updateFlagForCodeInput(inputEl, imgEl) {
+  if (!inputEl || !imgEl) return;
+  const code = normalizeDialCode(inputEl.value);
+  if (!code) {
+    setFlagImage(imgEl, "");
+    return;
+  }
+  ensureDialCodeCache().then((cache) => {
+    if (normalizeDialCode(inputEl.value) !== code) return;
+    const cached = cache.get(code);
+    if (!cached) {
+      setFlagImage(imgEl, "");
+      return;
+    }
+    setFlagImage(imgEl, cached.flagUrl, cached.iso2);
+  });
+}
+
+function scheduleFlagUpdate(inputEl, imgEl) {
+  if (!inputEl || !imgEl) return;
+  const key = imgEl.id || inputEl.id;
+  if (dialCodeTimers.has(key)) {
+    clearTimeout(dialCodeTimers.get(key));
+  }
+  const timer = setTimeout(() => {
+    dialCodeTimers.delete(key);
+    updateFlagForCodeInput(inputEl, imgEl);
+  }, 250);
+  dialCodeTimers.set(key, timer);
+}
+
+function bindDialCodeFlag(inputEl, imgEl) {
+  if (!inputEl || !imgEl) return;
+  const handler = () => scheduleFlagUpdate(inputEl, imgEl);
+  inputEl.addEventListener("input", handler);
+  inputEl.addEventListener("blur", handler);
+  scheduleFlagUpdate(inputEl, imgEl);
 }
 
 function normalizeAmount(value) {
@@ -565,6 +685,8 @@ function resetApp() {
   setActive(document.querySelectorAll("[data-level]"), document.querySelector("[data-level='Q']"));
   updateFramePreview();
   updateQrCode();
+  scheduleFlagUpdate(elements.phoneCode, elements.phoneFlag);
+  scheduleFlagUpdate(elements.waCode, elements.waFlag);
 }
 
 function bindEvents() {
@@ -641,6 +763,9 @@ function bindEvents() {
       updateQrCode();
     });
   });
+
+  bindDialCodeFlag(elements.phoneCode, elements.phoneFlag);
+  bindDialCodeFlag(elements.waCode, elements.waFlag);
 
   bindColorPair(elements.frameColor, elements.frameColorText, (value) => {
     state.frameColor = value;
