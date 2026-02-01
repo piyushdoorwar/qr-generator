@@ -49,9 +49,9 @@
             <button class="pill" type="button" data-content-type="email">Email</button>
             <button class="pill" type="button" data-content-type="phone">Mobile</button>
             <button class="pill" type="button" data-content-type="whatsapp">WhatsApp</button>
+            <button class="pill" type="button" data-content-type="contact">Contact</button>
             <button class="pill" type="button" data-content-type="wifi">WiFi</button>
             <button class="pill" type="button" data-content-type="upi">UPI</button>
-            <button class="pill" type="button" data-content-type="contact">Contact</button>
           </div>
           <div class="content-forms">
             <div class="form-grid" data-content-form="text">
@@ -149,79 +149,165 @@
               </label>
             </div>
             <div class="contact-form" data-content-form="contact" hidden>
-              <div class="form-grid">
-                <label class="field">
-                  <span class="label">First name</span>
-                  <input id="contactFirstName" type="text" placeholder="Riya">
-                </label>
-                <label class="field">
-                  <span class="label">Middle name (optional)</span>
-                  <input id="contactMiddleName" type="text" placeholder="K.">
-                </label>
-                <label class="field">
-                  <span class="label">Surname</span>
-                  <input id="contactLastName" type="text" placeholder="Mehta">
-                </label>
-                <label class="field">
-                  <span class="label">Company name</span>
-                  <input id="contactCompany" type="text" placeholder="Studio Nova">
-                </label>
-                <label class="field">
-                  <span class="label">Email</span>
-                  <input id="contactEmail" type="email" placeholder="riya@example.com">
-                </label>
-                <label class="field">
-                  <span class="label">Additional email (optional)</span>
-                  <input id="contactEmailAlt" type="email" placeholder="work@example.com">
-                </label>
-                <label class="field">
-                  <span class="label">Birthday (optional)</span>
-                  <input id="contactBirthday" type="date">
-                </label>
-              </div>
-              <div class="form-grid form-grid--phone-extended contact-phone-grid">
-                <label class="field">
-                  <span class="label">Phone country code</span>
-                  <div class="country-code-input">
-                    <span class="flag-slot" aria-hidden="true">
-                      <img id="contactPhoneFlag" class="flag-icon" alt="">
-                    </span>
-                    <input id="contactPhoneCode" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Name</h3>
+                    <p>Optional, but it helps scanners label the contact.</p>
                   </div>
-                </label>
-                <label class="field">
-                  <span class="label">Phone number</span>
-                  <input id="contactPhoneNumber" type="tel" placeholder="555 123 4567">
-                </label>
-                <label class="field">
-                  <span class="label">Label (optional)</span>
-                  <input id="contactPhoneLabel" type="text" placeholder="Mobile">
-                </label>
+                </div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="label">Name prefix (optional)</span>
+                    <input id="contactPrefix" type="text" placeholder="Dr.">
+                  </label>
+                  <label class="field">
+                    <span class="label">First name</span>
+                    <input id="contactFirstName" type="text" placeholder="Riya">
+                  </label>
+                  <label class="field">
+                    <span class="label">Middle name (optional)</span>
+                    <input id="contactMiddleName" type="text" placeholder="K.">
+                  </label>
+                  <label class="field">
+                    <span class="label">Surname</span>
+                    <input id="contactLastName" type="text" placeholder="Mehta">
+                  </label>
+                  <label class="field">
+                    <span class="label">Nickname (optional)</span>
+                    <input id="contactNickname" type="text" placeholder="Riya M.">
+                  </label>
+                </div>
               </div>
-              <div class="contact-extra-toggle">
-                <button class="ghost-btn" type="button" id="addContactPhoneBtn">Add another number</button>
-                <button class="ghost-btn" type="button" id="removeContactPhoneBtn" hidden>Remove additional number</button>
-              </div>
-              <div class="form-grid form-grid--phone-extended contact-phone-grid" id="contactExtraPhoneBlock" hidden>
-                <label class="field">
-                  <span class="label">Additional code</span>
-                  <div class="country-code-input">
-                    <span class="flag-slot" aria-hidden="true">
-                      <img id="contactAltPhoneFlag1" class="flag-icon" alt="">
-                    </span>
-                    <input id="contactAltPhoneCode1" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Job</h3>
+                    <p>All optional details about the role.</p>
                   </div>
-                </label>
-                <label class="field">
-                  <span class="label">Additional number</span>
-                  <input id="contactAltPhoneNumber1" type="tel" placeholder="555 888 0000">
-                </label>
-                <label class="field">
-                  <span class="label">Label (optional)</span>
-                  <input id="contactAltPhoneLabel1" type="text" placeholder="Work">
-                </label>
+                </div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="label">Company name</span>
+                    <input id="contactCompany" type="text" placeholder="Studio Nova">
+                  </label>
+                  <label class="field">
+                    <span class="label">Job title (optional)</span>
+                    <input id="contactJobTitle" type="text" placeholder="Product Designer">
+                  </label>
+                  <label class="field">
+                    <span class="label">Department (optional)</span>
+                    <input id="contactDepartment" type="text" placeholder="Design">
+                  </label>
+                </div>
               </div>
-              <p class="form-help">Add at least a name, phone, or email to generate the contact QR.</p>
+
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Contact</h3>
+                    <p>Phone, email, and birthday.</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="label">Email</span>
+                    <input id="contactEmail" type="email" placeholder="riya@example.com">
+                  </label>
+                  <label class="field">
+                    <span class="label">Additional email (optional)</span>
+                    <input id="contactEmailAlt" type="email" placeholder="work@example.com">
+                  </label>
+                  <label class="field">
+                    <span class="label">Birthday (optional)</span>
+                    <input id="contactBirthday" type="date">
+                  </label>
+                </div>
+                <div class="form-grid form-grid--phone-extended contact-phone-grid">
+                  <label class="field">
+                    <span class="label">Phone country code</span>
+                    <div class="country-code-input">
+                      <span class="flag-slot" aria-hidden="true">
+                        <img id="contactPhoneFlag" class="flag-icon" alt="">
+                      </span>
+                      <input id="contactPhoneCode" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                    </div>
+                  </label>
+                  <label class="field">
+                    <span class="label">Phone number</span>
+                    <input id="contactPhoneNumber" type="tel" placeholder="555 123 4567">
+                  </label>
+                  <label class="field">
+                    <span class="label">Label (optional)</span>
+                    <input id="contactPhoneLabel" type="text" placeholder="Mobile">
+                  </label>
+                </div>
+                <div class="contact-extra-toggle">
+                  <button class="ghost-btn" type="button" id="addContactPhoneBtn">Add another number</button>
+                  <button class="ghost-btn" type="button" id="removeContactPhoneBtn" hidden>Remove additional number</button>
+                </div>
+                <div class="form-grid form-grid--phone-extended contact-phone-grid" id="contactExtraPhoneBlock" hidden>
+                  <label class="field">
+                    <span class="label">Additional code</span>
+                    <div class="country-code-input">
+                      <span class="flag-slot" aria-hidden="true">
+                        <img id="contactAltPhoneFlag1" class="flag-icon" alt="">
+                      </span>
+                      <input id="contactAltPhoneCode1" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                    </div>
+                  </label>
+                  <label class="field">
+                    <span class="label">Additional number</span>
+                    <input id="contactAltPhoneNumber1" type="tel" placeholder="555 888 0000">
+                  </label>
+                  <label class="field">
+                    <span class="label">Label (optional)</span>
+                    <input id="contactAltPhoneLabel1" type="text" placeholder="Work">
+                  </label>
+                </div>
+              </div>
+
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Address</h3>
+                    <p>Optional location details.</p>
+                  </div>
+                  <div class="contact-section-actions">
+                    <button class="ghost-btn" type="button" id="addContactAddressBtn">Add address</button>
+                    <button class="ghost-btn" type="button" id="removeContactAddressBtn" hidden>Remove address</button>
+                  </div>
+                </div>
+                <div class="form-grid" id="contactAddressBlock" hidden>
+                  <label class="field">
+                    <span class="label">Address line 1</span>
+                    <input id="contactAddressLine1" type="text" placeholder="123 Market Street">
+                  </label>
+                  <label class="field">
+                    <span class="label">Address line 2 (optional)</span>
+                    <input id="contactAddressLine2" type="text" placeholder="Suite 12">
+                  </label>
+                  <label class="field">
+                    <span class="label">City</span>
+                    <input id="contactAddressCity" type="text" placeholder="San Francisco">
+                  </label>
+                  <label class="field">
+                    <span class="label">State / Region</span>
+                    <input id="contactAddressRegion" type="text" placeholder="CA">
+                  </label>
+                  <label class="field">
+                    <span class="label">Postal code</span>
+                    <input id="contactAddressPostal" type="text" placeholder="94105">
+                  </label>
+                  <label class="field">
+                    <span class="label">Country</span>
+                    <input id="contactAddressCountry" type="text" placeholder="United States">
+                  </label>
+                </div>
+              </div>
+
+              <p class="form-help">Add at least a name, phone, email, or address to generate the contact QR.</p>
             </div>
           </div>
         </div>

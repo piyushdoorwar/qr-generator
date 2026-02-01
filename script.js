@@ -38,10 +38,14 @@ const elements = {
   upiName: document.getElementById("upiName"),
   upiAmount: document.getElementById("upiAmount"),
   upiNote: document.getElementById("upiNote"),
+  contactPrefix: document.getElementById("contactPrefix"),
   contactFirstName: document.getElementById("contactFirstName"),
   contactMiddleName: document.getElementById("contactMiddleName"),
   contactLastName: document.getElementById("contactLastName"),
+  contactNickname: document.getElementById("contactNickname"),
   contactCompany: document.getElementById("contactCompany"),
+  contactJobTitle: document.getElementById("contactJobTitle"),
+  contactDepartment: document.getElementById("contactDepartment"),
   contactEmail: document.getElementById("contactEmail"),
   contactEmailAlt: document.getElementById("contactEmailAlt"),
   contactBirthday: document.getElementById("contactBirthday"),
@@ -54,6 +58,15 @@ const elements = {
   addContactPhoneBtn: document.getElementById("addContactPhoneBtn"),
   removeContactPhoneBtn: document.getElementById("removeContactPhoneBtn"),
   contactExtraPhoneBlock: document.getElementById("contactExtraPhoneBlock"),
+  contactAddressLine1: document.getElementById("contactAddressLine1"),
+  contactAddressLine2: document.getElementById("contactAddressLine2"),
+  contactAddressCity: document.getElementById("contactAddressCity"),
+  contactAddressRegion: document.getElementById("contactAddressRegion"),
+  contactAddressPostal: document.getElementById("contactAddressPostal"),
+  contactAddressCountry: document.getElementById("contactAddressCountry"),
+  addContactAddressBtn: document.getElementById("addContactAddressBtn"),
+  removeContactAddressBtn: document.getElementById("removeContactAddressBtn"),
+  contactAddressBlock: document.getElementById("contactAddressBlock"),
   phoneFlag: document.getElementById("phoneFlag"),
   waFlag: document.getElementById("waFlag"),
   contactPhoneFlag: document.getElementById("contactPhoneFlag"),
@@ -504,6 +517,25 @@ function setContactExtraVisible(visible) {
   }
 }
 
+function setContactAddressVisible(visible) {
+  if (!elements.contactAddressBlock) return;
+  elements.contactAddressBlock.hidden = !visible;
+  if (elements.addContactAddressBtn) {
+    elements.addContactAddressBtn.hidden = visible;
+  }
+  if (elements.removeContactAddressBtn) {
+    elements.removeContactAddressBtn.hidden = !visible;
+  }
+  if (!visible) {
+    if (elements.contactAddressLine1) elements.contactAddressLine1.value = "";
+    if (elements.contactAddressLine2) elements.contactAddressLine2.value = "";
+    if (elements.contactAddressCity) elements.contactAddressCity.value = "";
+    if (elements.contactAddressRegion) elements.contactAddressRegion.value = "";
+    if (elements.contactAddressPostal) elements.contactAddressPostal.value = "";
+    if (elements.contactAddressCountry) elements.contactAddressCountry.value = "";
+  }
+}
+
 function buildQrData() {
   switch (state.contentType) {
     case "text":
@@ -567,10 +599,14 @@ function buildQrData() {
       return `upi://pay?${params.join("&")}`;
     }
     case "contact": {
+      const prefix = elements.contactPrefix.value.trim();
       const first = elements.contactFirstName.value.trim();
       const middle = elements.contactMiddleName.value.trim();
       const last = elements.contactLastName.value.trim();
+      const nickname = elements.contactNickname.value.trim();
       const company = elements.contactCompany.value.trim();
+      const jobTitle = elements.contactJobTitle.value.trim();
+      const department = elements.contactDepartment.value.trim();
       const email = elements.contactEmail.value.trim();
       const altEmail = elements.contactEmailAlt.value.trim();
       const birthday = elements.contactBirthday.value.trim();
@@ -579,28 +615,51 @@ function buildQrData() {
       const altPhoneDigits1 = isExtraVisible
         ? normalizePhoneWithNumber(elements.contactAltPhoneCode1.value, elements.contactAltPhoneNumber1.value)
         : "";
+      const isAddressVisible = elements.contactAddressBlock && !elements.contactAddressBlock.hidden;
+      const addressLine1 = isAddressVisible ? elements.contactAddressLine1.value.trim() : "";
+      const addressLine2 = isAddressVisible ? elements.contactAddressLine2.value.trim() : "";
+      const addressCity = isAddressVisible ? elements.contactAddressCity.value.trim() : "";
+      const addressRegion = isAddressVisible ? elements.contactAddressRegion.value.trim() : "";
+      const addressPostal = isAddressVisible ? elements.contactAddressPostal.value.trim() : "";
+      const addressCountry = isAddressVisible ? elements.contactAddressCountry.value.trim() : "";
       const validEmail = isValidEmail(email) ? email : "";
       const validAltEmail = isValidEmail(altEmail) ? altEmail : "";
+      const hasAddress = Boolean(
+        isAddressVisible && (addressLine1 || addressLine2 || addressCity || addressRegion || addressPostal || addressCountry)
+      );
 
       const hasData = Boolean(
-        first || middle || last || company ||
+        prefix || first || middle || last || nickname || company || jobTitle || department ||
         validEmail || validAltEmail ||
-        phoneDigits || altPhoneDigits1
+        phoneDigits || altPhoneDigits1 ||
+        hasAddress
       );
       if (!hasData) return "";
 
       const nameParts = [first, middle, last].filter(Boolean);
-      const fullName = nameParts.join(" ").trim();
-      const fallbackName = fullName || company || validEmail || validAltEmail || (phoneDigits ? `+${phoneDigits}` : "");
+      const fullName = [prefix, ...nameParts].filter(Boolean).join(" ").trim();
+      const fallbackName = company || jobTitle || validEmail || validAltEmail || (phoneDigits ? `+${phoneDigits}` : "");
+      const displayName = fullName || fallbackName || "Contact";
 
       const lines = ["BEGIN:VCARD", "VERSION:3.0"];
-      if (first || middle || last) {
-        lines.push(`N:${escapeVCardValue(last)};${escapeVCardValue(first)};${escapeVCardValue(middle)};;`);
+      if (prefix || first || middle || last) {
+        lines.push(`N:${escapeVCardValue(last)};${escapeVCardValue(first)};${escapeVCardValue(middle)};${escapeVCardValue(prefix)};`);
       }
-      lines.push(`FN:${escapeVCardValue(fallbackName || "Contact")}`);
+      lines.push(`FN:${escapeVCardValue(displayName)}`);
 
-      if (company) {
-        lines.push(`ORG:${escapeVCardValue(company)}`);
+      if (nickname) {
+        lines.push(`NICKNAME:${escapeVCardValue(nickname)}`);
+      }
+
+      if (jobTitle) {
+        lines.push(`TITLE:${escapeVCardValue(jobTitle)}`);
+      }
+
+      if (company || department) {
+        const orgParts = [];
+        if (company) orgParts.push(escapeVCardValue(company));
+        if (department) orgParts.push(escapeVCardValue(department));
+        lines.push(`ORG:${orgParts.join(";")}`);
       }
 
       if (phoneDigits) {
@@ -619,6 +678,20 @@ function buildQrData() {
 
       if (validAltEmail) {
         lines.push(`EMAIL;TYPE=WORK:${escapeVCardValue(validAltEmail)}`);
+      }
+
+      if (hasAddress) {
+        const streetRaw = [addressLine1, addressLine2].filter(Boolean).join("\n");
+        const adrValues = [
+          "",
+          "",
+          streetRaw,
+          addressCity,
+          addressRegion,
+          addressPostal,
+          addressCountry
+        ].map((value) => escapeVCardValue(value || ""));
+        lines.push(`ADR;TYPE=WORK:${adrValues.join(";")}`);
       }
 
       if (/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
@@ -861,10 +934,14 @@ function resetApp() {
   elements.upiName.value = "";
   elements.upiAmount.value = "";
   elements.upiNote.value = "";
+  elements.contactPrefix.value = "";
   elements.contactFirstName.value = "";
   elements.contactMiddleName.value = "";
   elements.contactLastName.value = "";
+  elements.contactNickname.value = "";
   elements.contactCompany.value = "";
+  elements.contactJobTitle.value = "";
+  elements.contactDepartment.value = "";
   elements.contactEmail.value = "";
   elements.contactEmailAlt.value = "";
   elements.contactBirthday.value = "";
@@ -875,6 +952,7 @@ function resetApp() {
   elements.contactAltPhoneNumber1.value = "";
   elements.contactAltPhoneLabel1.value = "";
   setContactExtraVisible(false);
+  setContactAddressVisible(false);
   elements.frameText.value = defaultState.frameText;
   elements.frameColor.value = defaultState.frameColor;
   elements.frameColorText.value = defaultState.frameColor;
@@ -958,10 +1036,14 @@ function bindEvents() {
     elements.upiName,
     elements.upiAmount,
     elements.upiNote,
+    elements.contactPrefix,
     elements.contactFirstName,
     elements.contactMiddleName,
     elements.contactLastName,
+    elements.contactNickname,
     elements.contactCompany,
+    elements.contactJobTitle,
+    elements.contactDepartment,
     elements.contactEmail,
     elements.contactEmailAlt,
     elements.contactBirthday,
@@ -971,6 +1053,12 @@ function bindEvents() {
     elements.contactAltPhoneCode1,
     elements.contactAltPhoneNumber1,
     elements.contactAltPhoneLabel1,
+    elements.contactAddressLine1,
+    elements.contactAddressLine2,
+    elements.contactAddressCity,
+    elements.contactAddressRegion,
+    elements.contactAddressPostal,
+    elements.contactAddressCountry,
     elements.frameText
   ];
 
@@ -1028,6 +1116,20 @@ function bindEvents() {
   if (elements.removeContactPhoneBtn) {
     elements.removeContactPhoneBtn.addEventListener("click", () => {
       setContactExtraVisible(false);
+      updateQrCode();
+    });
+  }
+
+  if (elements.addContactAddressBtn) {
+    elements.addContactAddressBtn.addEventListener("click", () => {
+      setContactAddressVisible(true);
+      updateQrCode();
+    });
+  }
+
+  if (elements.removeContactAddressBtn) {
+    elements.removeContactAddressBtn.addEventListener("click", () => {
+      setContactAddressVisible(false);
       updateQrCode();
     });
   }
